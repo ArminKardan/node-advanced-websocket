@@ -1,5 +1,5 @@
 
-var Convert = require('./Conversions');
+//var Convert = require('./Conversions');
 const WebSocket = require('ws');
 var WSX = null; 
 
