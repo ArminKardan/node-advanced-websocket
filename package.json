@@ -1,0 +1,30 @@
+{
+  "name": "ak-advanced-websocket",
+  "version": "1.0.0",
+  "description": "An advanced websocket by the capability of sign in members and saving credentianls",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArminKardan/node-advanced-websocket.git"
+  },
+  "keywords": [
+    "websocket",
+    "advanded-websocket",
+    "advanced",
+    "member",
+    "login"
+  ],
+  "author": "Armin Kardan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ArminKardan/node-advanced-websocket/issues"
+  },
+  "homepage": "https://github.com/ArminKardan/node-advanced-websocket#readme",
+  "dependencies": {
+    "node-conversions": "^1.0.0",
+    "ws": "^7.0.1"
+  }
+}
