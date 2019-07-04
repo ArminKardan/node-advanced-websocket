@@ -1,15 +1,20 @@
 
 //var Convert = require('./Conversions');
 const WebSocket = require('ws');
+var aes256 = require('aes256');
+
 var WSX = null; 
 
 const WXListeners = [];
+var Securities;
+var onuserConnect;
+
 
 class WSPlusAuth extends WebSocket.Server {
     constructor(port)
     {
         super(port)
-        this.UserCredential = null
+        this.UID = null
     }
    // 
 }
@@ -29,7 +34,7 @@ module.exports = {
     isUserOnline(UID)
     {
         WSX.clients.forEach(function each(ws) {
-            if(ws.UserCredential == UID)
+            if(ws.UID == UID)
             {
                 targetWs = ws;
                 return true;
@@ -41,18 +46,42 @@ module.exports = {
     UsersCount: function()
     {
         let x = 0;
-        WSX.clients.forEach(function each(ws) {x++});
+        WSX.clients.forEach(function each(ws) { if(ws.UID) {x++}});
+        return x;
+    },
+
+    ClientCount: function()
+    {
+        let x = 0;
+        WSX.clients.forEach(function each(ws) { x++});
         return x;
     },
 
     Broadcast: function(data)
     {
+        let counter = 0;
         WSX.clients.forEach(function each(ws) {
+                counter++;
                 ws.send(data);
         });
+        return counter;
     },
 
-    Send:function(data, UserCredential , ClientObject){  //InputIsUTF8 use for JSON.Stringify!~!
+    BroadcastToUsers: function(data)
+    {
+        let counter = 0;
+        WSX.clients.forEach(function each(ws) {
+                if(ws.UID)
+                {
+                    counter++;
+                    ws.send(data);
+                }
+
+        });
+        return counter;
+    },
+
+    Send:function(data, UID , ClientObject){  //InputIsUTF8 use for JSON.Stringify!~!
         let x = data;
         
         var targetWs = null;
@@ -60,7 +89,7 @@ module.exports = {
         if(ClientObject== undefined)
         {
             WSX.clients.forEach(function each(ws) {
-                if(ws.UserCredential == UserCredential)
+                if(ws.UID == UID)
                 {
                     targetWs = ws;
                     console.log("ratget found!");
@@ -70,7 +99,7 @@ module.exports = {
             if(targetWs == null)
             {
                 console.log("Ws Send Error: Usercredential did not match any client:\n UserCred, target:");
-                console.log(UserCredential);
+                console.log(UID);
                 console.log(targetWs);
                 return;
             }
@@ -84,13 +113,15 @@ module.exports = {
 
 
 
-    Start: function (port)
+    Start: function (port, Securitiesx, onUserConnect)
     {
         function noop() {}
         
         function heartbeat() {
             this.isAlive = true;
         }
+        onuserConnect = onUserConnect;
+        Securities = JSON.parse(JSON.stringify(Securitiesx)); //clone copy!
 
         clientPool = [];
         
@@ -99,13 +130,14 @@ module.exports = {
         console.log("websocket is waiting...");
 
         WSX.on('connection', function connection(ws) {
+
             console.log("websocket connection established...");
 
             for(let i = 0; i < WXListeners.length; i++)
             {
               if(WXListeners[i].onOpen!=undefined)
               {
-                WXListeners[i].onOpen();
+                WXListeners[i].onOpen(ws);
               }
             }
 
@@ -118,9 +150,21 @@ module.exports = {
 
                 if(data.substring(0,8) == "AuthSet:")
                 {
-                    ws.UserCredential = data.substring(8);
-                    console.log("User credencial set to:"+ws.UserCredential);
-                    return;
+                    let x = data.substring(8);
+
+                    let y = aes256.decrypt(Securities.aeskey, x);
+
+                    if(y.endsWith(Securities.uservaliditysuffix))
+                    {
+                        ws.UID = y;
+                        onuserConnect(y);
+                        console.log("User connected by UID:"+y);
+                        return;
+                    }
+                    else
+                    {
+                        console.log("Security problem, trying to introduce user without Valid Suffix");
+                    }
                 }
 
                 else if(data.substring(0,17) == "AuthRequestBySMS:")
@@ -184,7 +228,7 @@ module.exports = {
                 {
                 if(WXListeners[i].onClose!=undefined)
                 {
-                    WXListeners[i].onClose();
+                    WXListeners[i].onClose(ws);
                 }
                 }
 
