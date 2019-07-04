@@ -110,9 +110,6 @@ module.exports = {
         ClientObject.send(x);
     },
 
-
-
-
     Start: function (port, Securitiesx, onUserConnect)
     {
         function noop() {}
@@ -193,18 +190,38 @@ module.exports = {
                     return;
                 }
 
-                else if(data.substring(0,19) == "GetCredencialByOTP:")
+                else if(data.substring(0,19) == "AuthRequestByEmail:")
                 {
-                    let phone_otp = data.substring(19).split("-");
-                    let phone = phone_otp[0];
-                    let otp = phone_otp[1];
-
+                    let email = data.substring(19);
                     for(let i = 0; i < WXListeners.length; i++)
                     {
-                        if(WXListeners[i].onGetCredentialByOTP!=undefined)
+                        if(WXListeners[i].onAuthRequestByEmail!=undefined)
                         {
-                            WXListeners[i].onGetCredentialByOTP(phone,otp,ws);
+                            WXListeners[i].onAuthRequestByEmail(email,ws);
                         }
+                    }
+                    return;
+                }
+
+                else if(data.substring(0,19) == "GetCredencialByOTP:")
+                {
+                    let phoneEmail_otp = data.substring(19).split("-");
+                    if( phoneEmail_otp.length ==2)
+                    {
+                        let phoneEmail = phoneEmail_otp[0];
+                        let otp = phoneEmail_otp[1];
+
+                        for(let i = 0; i < WXListeners.length; i++)
+                        {
+                            if(WXListeners[i].onGetCredentialByOTP!=undefined)
+                            {
+                                WXListeners[i].onGetCredentialByOTP(phoneEmail,otp,ws);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        console.log('Confliction in OPT Length!')
                     }
                     return;
                 }
