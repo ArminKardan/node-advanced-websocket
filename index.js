@@ -26,6 +26,32 @@ module.exports = {
         WXListeners.splice( WXListeners.indexOf(method), 1 );
     },
 
+    isUserOnline(UID)
+    {
+        WSX.clients.forEach(function each(ws) {
+            if(ws.UserCredential == UID)
+            {
+                targetWs = ws;
+                return true;
+            }
+            });
+            return false;
+    },
+
+    UsersCount: function()
+    {
+        let x = 0;
+        WSX.clients.forEach(function each(ws) {x++});
+        return x;
+    },
+
+    Broadcast: function(data)
+    {
+        WSX.clients.forEach(function each(ws) {
+                ws.send(data);
+        });
+    },
+
     Send:function(data, UserCredential , ClientObject){  //InputIsUTF8 use for JSON.Stringify!~!
         let x = data;
         
