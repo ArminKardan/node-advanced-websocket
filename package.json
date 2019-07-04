@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/ArminKardan/node-advanced-websocket#readme",
   "dependencies": {
+    "aes256": "^1.0.4",
     "node-conversions": "^1.0.0",
     "ws": "^7.0.1"
   }
